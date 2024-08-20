@@ -77,7 +77,7 @@ const Hero = () => {
             className="w-full py-3 border focus:outline-none bg-gray-600 rounded-full focus:ring-gray-500 focus:ring-offset-3 flex items-center justify-center space-x-2 text-white hover:bg-gray-700"
           >
             <img src="/public/android.svg" alt="Google" className="w-5 h-5" />
-            <span className="font-bold">Continue with Google</span>
+            Continue with google
           </button>
           <button
             type="button"
