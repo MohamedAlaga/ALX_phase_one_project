@@ -17,7 +17,7 @@ const Hero = () => {
        
         <div className="flex flex-col items-center w-full max-w-md mx-auto p-4 space-y-3">
           <div className="space-y-3 text-center">
-            <h1 className="font-bold text-4xl lg:text-6xl">Join Linktree</h1>
+            <h1 className="font-bold text-4xl lg:text-6xl">Join Rolax</h1>
             <p className="regular-16 mt-6 text-gray-30 xl:max-w-[520px]">
               Sign up for free!
             </p>
@@ -57,7 +57,7 @@ const Hero = () => {
             <a href="" className="text-purple-600 hover:underline">
               Create account
             </a>
-            , you agree to Linktree's{" "}
+            , you agree to Rolax's{" "}
             <a href="https://policies.google.com/terms" className="text-purple-600 hover:underline">
               Terms and condition
             </a>{" "}
@@ -72,20 +72,8 @@ const Hero = () => {
             <span className="mx-2 text-gray-500">OR</span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
-          <button
-            type="button"
-            className="w-full py-3 border focus:outline-none bg-gray-600 rounded-full focus:ring-gray-500 focus:ring-offset-3 flex items-center justify-center space-x-2 text-white hover:bg-gray-700"
-          >
-            <img src="/public/android.svg" alt="Google" className="w-5 h-5" />
-            Continue with google
-          </button>
-          <button
-            type="button"
-            className="w-full py-3 border focus:outline-none bg-gray-600 rounded-full focus:ring-gray-500 focus:ring-offset-3 flex items-center justify-center space-x-2 text-white hover:bg-gray-700"
-          >
-            <img src="/public/apple.svg" alt="Apple" className="w-5 h-5" />
-            <span className="font-bold">Continue with Apple</span>
-          </button>
+          
+          
           <p className="bold-40 w-full text-center space-y-3">
             Already have an account?{" "}
             <Link href="http://localhost:3000/" className="text-purple-600 hover:underline">
