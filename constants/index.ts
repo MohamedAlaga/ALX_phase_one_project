@@ -78,5 +78,5 @@ export const SOCIALS = {
     '/twitter.svg',
     '/youtube.svg',
     '/wordpress.svg',
-  ],V
+  ],
 };
