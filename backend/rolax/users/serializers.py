@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Items
+from .models import User, Items , purchaseReciept
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -18,7 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
 class ItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Items
@@ -30,12 +29,18 @@ class ItemsSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class BuyReceiptSerializer(serializers.ModelSerializer):
+class PurchaseReceiptSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Items
-        fields = ["id", "name", "barcode", "price", "quantity", "owner"]
+        model = purchaseReciept
+        fields = ['item', 'quantity', 'price' , 'owner', 'recieptNumber']
 
     def create(self, validated_data):
-        instance = self.Meta.model(**validated_data)
-        instance.save()
-        return instance
+        purchase_receipt = purchaseReciept.objects.create(
+            recieptNumber=validated_data['recieptNumber'],
+            item=validated_data['item'],
+            quantity=validated_data['quantity'],
+            owner = validated_data['owner'],
+            price=validated_data['price']
+        )
+        Items.objects.filter(id=validated_data['item'].id).update(quantity=validated_data['item'].quantity + validated_data['quantity'])
+        return purchase_receipt
