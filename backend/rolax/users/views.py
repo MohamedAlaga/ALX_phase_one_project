@@ -160,7 +160,13 @@ class getCurrentUserPerms(APIView):
 
 class getuserPerms(APIView):
     def get(self, request, id):
-        user = User.objects.filter(id=id).first()
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to view user permissions"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        user = User.objects.filter(id=id , manager = currentUser.manager).first()
         if user:
             perms = user.get_all_permissions()
             return Response({"permissions": perms})

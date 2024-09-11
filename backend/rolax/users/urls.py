@@ -24,8 +24,8 @@ urlpatterns = [
     path("users/perms/grant", GrantPermission.as_view()),
     path("users/perms/revoke", RevokePermission.as_view()),
     path("users/perms/current", getCurrentUserPerms.as_view()),
-    path("users/perms/<int:id>", getuserPerms.as_view()),
-    path("register", Register.as_view()),
+    path("users/perms/<int:id>", getuserPerms.as_view()),##
+    path("signup", Register.as_view()),
     path("login", Login.as_view()),
     path("logout", Logout.as_view()),
 ]
