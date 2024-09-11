@@ -6,11 +6,24 @@ from .serializers import (
     ItemsSerializer,
     PurchaseReceiptSerializer,
     SellReceiptSerializer,
+    SubUserSerializer,
 )
 from .models import User, Items, purchaseReciept, sellReciept
 from rest_framework import status
 import jwt, datetime
+from django.contrib.auth.models import Permission
 
+def checkUser(token):
+        if not token:
+            raise AuthenticationFailed("Unauthenticated!")
+
+        try:
+            payload = jwt.decode(token, "secret", algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed("Unauthenticated!")
+
+        user = User.objects.filter(id=payload["id"]).first()
+        return user
 
 class Register(APIView):
     def post(self, request):
@@ -19,6 +32,156 @@ class Register(APIView):
         serizlizer.save()
         return Response(serizlizer.data)
 
+
+class RegisterSubUser(APIView):
+    def post(self, request):
+        manager = request.COOKIES.get("pharma_id")
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to create sub users"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if not manager:
+            return Response(
+                {"message": "No manager found"}, status=status.HTTP_403_FORBIDDEN
+            )
+        if currentUser:
+            data = request.data.copy()
+            data["manager"] = manager
+            serizlizer = SubUserSerializer(data=data)
+            serizlizer.is_valid(raise_exception=True)
+            serizlizer.save()
+            return Response(serizlizer.data)
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class GrantPermission(APIView):
+    def post(self, request):
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to grant permissions"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        user_id = request.data["user_id"]
+        if not user_id:
+            return Response(
+                {"message": "No user id found"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        user = User.objects.filter(id=user_id).first()
+        if user:
+            permission = request.data["permission"]
+            if not permission:
+                return Response(
+                    {"message": "No permission found"}, status=status.HTTP_400_BAD_REQUEST
+                )
+            user.user_permissions.add(Permission.objects.get(codename=permission))
+            return Response({"message": "Permission granted successfully"})
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class RevokePermission(APIView):
+    def post(self, request):
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to revoke permissions"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        user_id = request.data["user_id"]
+        user = User.objects.filter(id=user_id).first()
+        if user:
+            permission = request.data["permission"]
+            if not permission:
+                return Response(
+                    {"message": "No permission found"}, status=status.HTTP_400_BAD_REQUEST
+                )
+            user.user_permissions.remove(Permission.objects.get(codename=permission))
+            return Response({"message": "Permission revoked successfully"})
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class manageUser(APIView):
+    def get(self, request,id):
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to manage users"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        user = User.objects.filter(id=id , manager = currentUser.manager).first()
+        if user:
+            serizlizer = UserSerializer(user)
+            return Response(serizlizer.data)
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+      
+    def delete(self, request, id):
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to delete users"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        user = User.objects.filter(id=id).first()
+        if user:
+            user.delete()
+            return Response({"message": "User deleted successfully"})
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+      
+    def post(self, request, id):
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to update users"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        user = User.objects.filter(id=id).first()
+        if user:
+            serizlizer = UserSerializer(user, data=request.data, partial=True)
+            serizlizer.is_valid(raise_exception=True)
+            serizlizer.save()
+            return Response(serizlizer.data)
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class getCurrentUserPerms(APIView):
+    def get(self, request):
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if currentUser:
+            perms = currentUser.get_all_permissions()
+            return Response({"permissions": perms})
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class getuserPerms(APIView):
+    def get(self, request, id):
+        user = User.objects.filter(id=id).first()
+        if user:
+            perms = user.get_all_permissions()
+            return Response({"permissions": perms})
+        return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class getAllUsers(APIView):
+    def get(self, request):
+        currentUser = checkUser(request.COOKIES.get("token"))
+        if not currentUser.has_perm("users.manage_users"):
+            return Response(
+                {"message": "You do not have permission to view users"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        users = User.objects.filter(manager=currentUser.manager)
+        data = []
+        for user in users:
+            data.append(
+                {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "manager": user.manager.id,
+                }
+            )
+        return Response(data)
 
 class Login(APIView):
     def post(self, request):
@@ -41,6 +204,7 @@ class Login(APIView):
         token = jwt.encode(payload, "secret", algorithm="HS256")
         response = Response()
         response.set_cookie(key="token", value=token, httponly=True)
+        response.set_cookie(key="user_id", value=user.id, httponly=True)
         response.set_cookie(key="pharma_id", value=user.manager.id, httponly=True)
         response.data = {"token": token, "pharma_id": user.manager.id}
 
@@ -75,7 +239,12 @@ class Logout(APIView):
 
 class addItemsView(APIView):
     def post(self, request):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_items"):
+            return Response(
+                {"message": "You do not have permission to add items"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.manager.id
         data = request.data.copy()
         data["owner"] = owner
         serizlizer = ItemsSerializer(data=data)
@@ -87,7 +256,12 @@ class addItemsView(APIView):
 
 class purchaseReceiptBulkCreateView(APIView):
     def post(self, request):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_purchase_receipts"):
+            return Response(
+                {"message": "You do not have permission to purchase receipt"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.manager.id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -132,7 +306,12 @@ class purchaseReceiptBulkCreateView(APIView):
 
 class getCurentUserlastPurchaseReciept(APIView):
     def get(self, request):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_purchase_receipts"):
+            return Response(
+                {"message": "You do not have permission to purchase receipts"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.manager.id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -152,6 +331,7 @@ class getCurentUserlastPurchaseReciept(APIView):
                         "price": reciept.price,
                         "owner": reciept.owner.id,
                         "recieptNumber": reciept.recieptNumber,
+                        "date": reciept.created_at,
                     }
                 )
             return Response(data)
@@ -162,7 +342,12 @@ class getCurentUserlastPurchaseReciept(APIView):
 
 class getUserPurchaserecieptsByNumber(APIView):
     def get(self, request, id):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_purchase_receipts"):
+            return Response(
+                {"message": "You do not have permission to purchase receipt"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -179,6 +364,7 @@ class getUserPurchaserecieptsByNumber(APIView):
                         "price": reciept.price,
                         "owner": reciept.owner.id,
                         "recieptNumber": reciept.recieptNumber,
+                        "date": reciept.created_at,
                     }
                 )
             return Response(data)
@@ -189,7 +375,12 @@ class getUserPurchaserecieptsByNumber(APIView):
 
 class sellReceiptBulkCreateView(APIView):
     def post(self, request):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_sell_receipts"):
+            return Response(
+                {"message": "You do not have permission to sell receipt"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.id
         data = request.data.copy()
         last_receipt = sellReciept.objects.filter(owner=owner).last()
         recieptNumber = last_receipt.recieptNumber + 1 if last_receipt else 1
@@ -229,7 +420,12 @@ class sellReceiptBulkCreateView(APIView):
 
 class getCurrentUserLastsellReceipt(APIView):
     def get(self, request):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_sell_receipts"):
+            return Response(
+                {"message": "You do not have permission to sell receipt"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -246,8 +442,10 @@ class getCurrentUserLastsellReceipt(APIView):
                         "item_id": reciept.item.id,
                         "item_name": reciept.item.name,
                         "quantity": reciept.quantity,
+                        "price": reciept.item.price * reciept.quantity,
                         "owner": reciept.owner.id,
                         "recieptNumber": reciept.recieptNumber,
+                        "date": reciept.created_at,
                     }
                 )
             return Response(data)
@@ -258,7 +456,12 @@ class getCurrentUserLastsellReceipt(APIView):
 
 class getCurrentUserSellRecieptsByNumber(APIView):
     def get(self, request, id):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_sell_receipts"):
+            return Response(
+                {"message": "You do not have permission to sell receipt"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -275,6 +478,7 @@ class getCurrentUserSellRecieptsByNumber(APIView):
                         "price": reciept.item.price * reciept.quantity,
                         "owner": reciept.owner.id,
                         "recieptNumber": reciept.recieptNumber,
+                        "date": reciept.created_at,
                     }
                 )
             return Response(data)
@@ -285,7 +489,12 @@ class getCurrentUserSellRecieptsByNumber(APIView):
 
 class getCurrentUserItems(APIView):
     def get(self, request):
-        owner = request.COOKIES.get("pharma_id")
+        user = checkUser(request.COOKIES.get("token"))
+        if not user.has_perm("users.manage_items"):
+            return Response(
+                {"message": "You do not have permission to  items"},
+                status=status.HTTP_403_FORBIDDEN,)
+        owner = user.id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -309,7 +518,7 @@ class getCurrentUserItems(APIView):
 
 class getCurrentUserItemsById(APIView):
     def get(self, request, id):
-        owner = request.COOKIES.get("pharma_id")
+        owner = checkUser(request.COOKIES.get("token")).id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -330,7 +539,7 @@ class getCurrentUserItemsById(APIView):
 
 class getCurrentUserItemsBybarcode(APIView):
     def get(self, request, barcode):
-        owner = request.COOKIES.get("pharma_id")
+        owner = checkUser(request.COOKIES.get("token")).id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -348,9 +557,10 @@ class getCurrentUserItemsBybarcode(APIView):
             )
         return Response({"message": "No items found"}, status=status.HTTP_404_NOT_FOUND)
 
+
 class getSearchItems(APIView):
     def get(self, request, name):
-        owner = request.COOKIES.get("pharma_id")
+        owner = checkUser(request.COOKIES.get("token")).id
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
