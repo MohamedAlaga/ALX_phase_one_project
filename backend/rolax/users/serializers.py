@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Items , purchaseReciept
+from .models import User, Items , purchaseReciept ,sellReciept
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -44,3 +44,18 @@ class PurchaseReceiptSerializer(serializers.ModelSerializer):
         )
         Items.objects.filter(id=validated_data['item'].id).update(quantity=validated_data['item'].quantity + validated_data['quantity'])
         return purchase_receipt
+
+class SellReceiptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = sellReciept
+        fields = ['item', 'quantity', 'owner', 'recieptNumber']
+
+    def create(self, validated_data):
+        sell_receipt = sellReciept.objects.create(
+            recieptNumber=validated_data['recieptNumber'],
+            item=validated_data['item'],
+            quantity=validated_data['quantity'],
+            owner = validated_data['owner']
+        )
+        Items.objects.filter(id=validated_data['item'].id).update(quantity=validated_data['item'].quantity - validated_data['quantity'])
+        return sell_receipt

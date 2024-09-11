@@ -12,7 +12,7 @@ class User(AbstractUser):
 
 class Items(models.Model):
     name = models.CharField(max_length=255)
-    barcode = models.CharField(max_length=255)
+    barcode = models.CharField(max_length=255, unique=True)
     price = models.FloatField()
     quantity = models.IntegerField()
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='owned_items')
