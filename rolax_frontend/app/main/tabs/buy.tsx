@@ -225,13 +225,12 @@ export default function buyTab() {
           value={Number.isNaN(buyPrice) ? "" : buyPrice}
           onChange={(e) => {
             const inputValue = e.target.value;
-            // Allow only numbers and one dot
             if (/^\d*\.?\d*$/.test(inputValue)) {
               setBuyPrice(inputValue);
             }
           }}
           onBlur={() => {
-            setBuyPrice(buyPrice || "0"); // Keep as string if invalid
+            setBuyPrice(buyPrice || "0"); 
           }}
           inputMode="decimal" />
         <p>Count</p>
