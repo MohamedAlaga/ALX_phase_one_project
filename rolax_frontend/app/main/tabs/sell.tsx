@@ -5,7 +5,7 @@ import { useRef, useEffect, useState } from "react";
 export default function SellTab() {
   const recieptsNumberRef = useRef<string | null>(null);
   const dateRef = useRef<string>();
-  var [barcode, setBarcode] = useState<string>(""); // Use state instead of ref for barcode
+  var [barcode, setBarcode] = useState<string>(""); 
   var [items, setItems] = useState<Array<{ item_name: string }> | null>(null);
   var [isLoading, setIsLoading] = useState(true);
   var [showDropdown, setShowDropdown] = useState(false);
@@ -136,7 +136,7 @@ export default function SellTab() {
 
   async function getReciepts(number: number) {
     try {
-      const lastRecieptNumber = await getRecieptsNumber() + 1;
+      const lastRecieptNumber = await getRecieptsNumber();
       if (number === 0 || number > lastRecieptNumber) { return null };
       let response = await fetch("http://localhost:8000/api/sell/" + number, {
         method: "GET",

@@ -1,20 +1,122 @@
+"use client";
 import { manrope } from "@/app/layout";
+import { useRef, useEffect, useState } from "react";
 
 export default function itemsTab() {
+  var [isLoading, setIsLoading] = useState(true);
+  var [itemsList, setItemsList] = useState<Array<any>>([]);
+  const barcodeRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const priceRef = useRef<HTMLInputElement>(null);
+
+  const getAllItems = async () => {
+    try {
+      let response = await fetch("http://localhost:8000/api/items", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      let items = await response.json();
+      if (response.status !== 200) {
+        return [];
+      }
+      return items;
+    } catch (error) {
+      console.error("Error fetching items:", error);
+      return [];
+    }
+  };
+
+  const addItem = async () => {
+    try {
+      let response = await fetch("http://localhost:8000/api/items/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          barcode: barcodeRef.current!.value,
+          name: nameRef.current!.value,
+          price: priceRef.current!.value,
+        }),
+      });
+      if (response.status !== 200) {
+        console.error("Error adding item:", response.status);
+        return;
+      }
+      barcodeRef.current!.value = "";
+      nameRef.current!.value  = "";
+      priceRef.current!.value = "";
+      setItemsList(await getAllItems());
+    } catch (error) {
+      console.error("Error adding item:", error);
+      return;
+    };
+  };
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      let items = await getAllItems();
+      setItemsList(items);
+      setIsLoading(false);
+    };
+    fetchItems();
+  }, []);
+
   return (
     <main className="py-6 px-12">
       <div className="grid grid-rows-2 grid-cols-6 text-3xl items-center place-items-center gap-6 py-6">
-         <p>barcode</p>
-        <input className="w-full h-16 border-solid border-violet-600 border-2 rounded-md col-span-2" type="text" />
+        <p>Barcode</p>
+        <input
+          ref={barcodeRef}
+          className="w-full h-16 border-solid border-violet-600 border-2 rounded-md col-span-2 px-2"
+          type="text"
+          onChange={(e) => barcodeRef.current!.value = e.target.value}
+        />
         <p>Name</p>
-        <input className="w-full h-16 border-solid border-violet-600 border-2 rounded-md col-span-2" type="text" />
-        <p>sell price</p>
-        <input className="w-full h-16 border-solid border-violet-600 border-2 rounded-md col-span-2" type="text" />
+        <input
+          ref={nameRef}
+          className="w-full h-16 border-solid border-violet-600 border-2 rounded-md col-span-2 px-2"
+          type="text"
+          onChange={(e) => nameRef.current!.value = e.target.value}
+        />
+        <p>Sell Price</p>
+        <input
+          ref={priceRef}
+          className="w-full h-16 border-solid border-violet-600 border-2 rounded-md col-span-2 px-2"
+          type="text"
+          onChange={(e) => {
+            var text = e.target.value;
+            if (Number.isNaN(parseFloat(text))) {
+              priceRef.current!.value = "";
+            } else if (text.includes(".")) {
+              var split = text.split(".");
+              if (Number.isNaN(parseInt(split[1]))) {
+                priceRef.current!.value = parseInt(split[0]) + ".";
+              }
+              else {
+                priceRef.current!.value = parseInt(split[0]) + "." + parseInt(split[1]);
+              }
+            } else {
+              priceRef.current!.value = parseInt(text).toString();
+            }
+          }}
+          inputMode="decimal"
+        />
         <div></div>
-        <button className="h-16 bg-violet-600 rounded-md w-full py-3 flex  items-center justify-center text-white text-2xl col-span-2">Add</button>
+        <button
+          className="h-16 bg-violet-600 rounded-md w-full py-3 flex items-center justify-center text-white text-2xl col-span-2"
+          onClick={addItem}
+        >
+          Add
+        </button>
       </div>
-      <div className={manrope.className}> 
-        <div className="my-6 border  border-slate-300 rounded-lg">
+
+      <div className={manrope.className}>
+        <div className="my-6 border border-slate-300 rounded-lg">
           <table className="w-full text-3xl text-center bg-white rounded-lg">
             <thead className="grid grid-cols-[0.5fr_3fr_1fr_1fr] w-full">
               <tr className="contents">
@@ -33,46 +135,18 @@ export default function itemsTab() {
               </tr>
             </thead>
             <tbody className="grid grid-cols-[0.5fr_3fr_1fr_1fr] w-full">
-              <tr className=" border-t border-slate-300 contents">
-                <td scope="row" className="py-4 border-r border-t border-slate-300">
-                  1
-                </td>
-                <td className="py-4 border-r border-t border-slate-300">
-                  Silver
-                </td>
-                <td className="py-4 border-r border-t border-slate-300">
-                  Laptop
-                </td>
-                <td className="py-4 border-t">
-                  $2999
-                </td>
-              </tr>
-              <tr className=" border-t border-slate-300 contents">
-                <td scope="row" className="py-4 border-r border-t border-slate-300">
-                  2
-                </td>
-                <td className="py-4 border-r border-t border-slate-300">
-                  White
-                </td>
-                <td className="py-4 border-r border-t border-slate-300">
-                  Laptop PC
-                </td>
-                <td className="py-4 border-t">
-                  $1999
-                </td>
-              </tr>
+              {itemsList.map((item, index) => (
+                <tr className="border-t border-slate-300 contents" key={"row" + index}>
+                  <td className="py-4 border-r border-t border-slate-300">{index + 1}</td>
+                  <td className="py-4 border-r border-t border-slate-300">{item["item_name"]}</td>
+                  <td className="py-4 border-r border-t border-slate-300">{item["quantity"]}</td>
+                  <td className="py-4 border-r border-t border-slate-300">{item["price"]}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       </div>
-      <div className="grid grid-rows-2 grid-cols-6 text-3xl items-center place-items-center gap-6 py-6">
-      <button className="h-16 bg-violet-600 rounded-md w-full py-3 flex text-2xl items-center justify-center text-white ">Previous</button>
-      <button className="h-16 bg-violet-600 rounded-md w-full py-3 flex text-2xl items-center justify-center text-white ">Next</button>
-      <div></div>
-      <div></div>
-      <button className="h-16 bg-violet-600 rounded-md w-full py-3 flex text-2xl items-center justify-center text-white col-span-2">Save</button>
-      </div>
-
     </main>
   );
 }
