@@ -37,8 +37,8 @@ class Register(APIView):
 
 class RegisterSubUser(APIView):
     def post(self, request):
-        manager = request.COOKIES.get("pharma_id")
         currentUser = checkUser(request.COOKIES.get("token"))
+        manager = currentUser.manager.id
         if not currentUser.has_perm("users.manage_users"):
             return Response(
                 {"message": "You do not have permission to create sub users"},
