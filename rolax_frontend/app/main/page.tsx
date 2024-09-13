@@ -3,19 +3,19 @@ import Image from "next/image";
 import { lexend } from "../layout";
 import { manrope } from "../layout";
 import sellIconWhite, { buyIconBlack, buyIconwhite, itemsIconBlack, itemsIconWhite, sellIconblack, usersIconBlack, usersIconWhite } from "./components";
-import {useState } from "react";
-import sellTab from "./tabs/sell";
-import buyTab from "./tabs/buy";
-import itemsTab from "./tabs/items";
-import usersTab from "./tabs/users";
+import { useState } from "react";
+import SellTab from "./tabs/sell";
+import BuyTab from "./tabs/buy";
+import ItemsTab from "./tabs/items";
+import UsersTab from "./tabs/users";
 
 
 export default function Home() {
   var selectedButton = "bg-violet-600 rounded-md w-full py-3 flex text-lg items-center justify-center text-white";
   var unselectedButton = "rounded-md w-full py-3 flex text-lg items-center justify-center";
-  var [selectedTab, setSelectedTab] = useState(1);
-  const selectedtabhandler = (tab:number) => {
-    setSelectedTab(selectedTab=tab);
+  var [selectedTab, setSelectedTab] = useState(0);
+  const selectedtabhandler = (tab: number) => {
+    setSelectedTab(selectedTab = tab);
   };
   return (
     <main className="h-screen">
@@ -25,13 +25,13 @@ export default function Home() {
       </header>
       <div className="flex h-full">
         <div className="flex items-center flex-col center min-w-48 h-full border-solid border-r-2 py-6 px-6">
-          <button onClick={(event) => selectedtabhandler(0)} className={selectedTab == 0 ? selectedButton :unselectedButton}>{selectedTab == 0? sellIconWhite():sellIconblack()}<div className={manrope.className}>Sell</div></button>
-          <button onClick={(event) => selectedtabhandler(1)} className={selectedTab == 1 ? selectedButton :unselectedButton}>{selectedTab == 1? buyIconwhite():buyIconBlack()}<div className={manrope.className}>Buy</div></button>
-          <button onClick={(event) => selectedtabhandler(2)} className={selectedTab == 2 ? selectedButton :unselectedButton}>{selectedTab == 2? itemsIconWhite():itemsIconBlack()}items</button>
-          <button onClick={(event) => selectedtabhandler(3)} className={selectedTab == 3 ? selectedButton :unselectedButton}>{selectedTab == 3? usersIconWhite():usersIconBlack()}users</button>
+          <button onClick={(event) => selectedtabhandler(0)} className={selectedTab == 0 ? selectedButton : unselectedButton}>{selectedTab == 0 ? sellIconWhite() : sellIconblack()}<div className={manrope.className}>Sell</div></button>
+          <button onClick={(event) => selectedtabhandler(1)} className={selectedTab == 1 ? selectedButton : unselectedButton}>{selectedTab == 1 ? buyIconwhite() : buyIconBlack()}<div className={manrope.className}>Buy</div></button>
+          <button onClick={(event) => selectedtabhandler(2)} className={selectedTab == 2 ? selectedButton : unselectedButton}>{selectedTab == 2 ? itemsIconWhite() : itemsIconBlack()}items</button>
+          <button onClick={(event) => selectedtabhandler(3)} className={selectedTab == 3 ? selectedButton : unselectedButton}>{selectedTab == 3 ? usersIconWhite() : usersIconBlack()}users</button>
         </div>
         <div className="w-full ">
-          {selectedTab == 0? sellTab():selectedTab == 1? buyTab():selectedTab == 2? itemsTab():usersTab()}
+        {selectedTab == 0 ? <SellTab /> : selectedTab == 1 ? <BuyTab /> : selectedTab == 2 ? <ItemsTab /> : <UsersTab />}
         </div>
       </div>
     </main>

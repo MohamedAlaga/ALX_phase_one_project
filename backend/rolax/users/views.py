@@ -166,7 +166,7 @@ class getuserPerms(APIView):
                 {"message": "You do not have permission to view user permissions"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        user = User.objects.filter(id=id , manager = currentUser.manager).first()
+        user = User.objects.filter(id=id, manager=currentUser.manager).first()
         if user:
             perms = user.get_all_permissions()
             return Response({"permissions": perms})
@@ -216,8 +216,6 @@ class Login(APIView):
         token = jwt.encode(payload, "secret", algorithm="HS256")
         response = Response()
         response.set_cookie(key="token", value=token, httponly=True)
-        response.set_cookie(key="user_id", value=user.id, httponly=True)
-        response.set_cookie(key="pharma_id", value=user.manager.id, httponly=True)
         response.data = {"token": token, "pharma_id": user.manager.id}
 
         return response
@@ -244,7 +242,6 @@ class Logout(APIView):
     def post(self, request):
         response = Response()
         response.delete_cookie("token")
-        response.delete_cookie("pharma_id")
         response.data = {"message": "success"}
         return response
 
@@ -592,6 +589,7 @@ class getSearchItems(APIView):
                 data.append(
                     {
                         "item_id": item.id,
+                        "barcode": item.barcode,
                         "item_name": item.name,
                         "quantity": item.quantity,
                         "price": item.price,

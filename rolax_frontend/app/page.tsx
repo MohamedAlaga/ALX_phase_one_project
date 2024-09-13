@@ -1,15 +1,26 @@
+"use client";
 import Image from "next/image";
 import styles from "./page.module.css";
 import { manrope } from "./layout";
+import { useRouter } from "next/navigation"
 
 export default function Home() {
+  const router = useRouter();
+  const handleLogin = async (e: { preventDefault: () => void; }) => {  
+    e.preventDefault();
+    await fetch("http://localhost:8000/api/users/current", {
+      method: "GET", headers: {
+        "Content-Type": "application/json",
+      },credentials: "include",
+    }).then((res) => res.status === 200 ? router.push("./main") : router.push("./login"))
+  }
   return (
     <main className={styles.main} >
       <div className="header">
         <div className="logo"><Image src="/logo2.png" alt="logo" width={36} height={36} />
           <h1>ROLAX</h1>
         </div>
-        <button className="button" style={{height:  36 , width:160}}><p className={manrope.className} style={{ fontSize: 14, fontWeight: 600}}>Get Started</p></button>
+        <button className="button" onClick={handleLogin} style={{height:  36 , width:160}}><p className={manrope.className} style={{ fontSize: 14, fontWeight: 600}}>Get Started</p></button>
       </div>
       <section>
         <Image src="/onboarding.png" alt="onboarding" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} />
