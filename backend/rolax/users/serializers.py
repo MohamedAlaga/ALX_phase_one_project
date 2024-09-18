@@ -1,15 +1,36 @@
+"""
+module to serialize the user model
+"""
+
 from rest_framework import serializers
-from .models import User, Items, purchaseReciept, sellReciept
+from .models import User
 from django.contrib.auth.models import Permission
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    serializer for new users (new pharmacy managers)
+    """
+
     class Meta:
+        """
+        class to define the model and fields to be serialized
+        """
+
         model = User
         fields = ["id", "name", "email", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
+        """
+        method to create a new user
+
+        Args:
+            validated_data (dict): user data to be validated
+
+        returns:
+            instance : the new user instance
+        """
         password = validated_data.pop("password")
         instance = self.Meta.model(**validated_data)
         if password is not None:
@@ -28,6 +49,15 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        """
+        method to update a user instance
+
+        Args:
+            instance (user): user instance to be updated
+
+        Returns:
+            instance : the updated user instance
+        """
         instance.name = validated_data.get("name", instance.name)
         instance.email = validated_data.get("email", instance.email)
         password = validated_data.pop("password", None)
@@ -38,64 +68,32 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SubUserSerializer(serializers.ModelSerializer):
+    """
+    serializer for sub users (pharmacy employees)
+    """
+
     class Meta:
+        """
+        class to define the model and fields to be serialized
+        """
+
         model = User
         fields = ["id", "name", "email", "password", "manager"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
+        """
+        method to create a new sub user
+
+        Args:
+            validated_data (dict): user data to be validated
+
+        returns:
+            instance : the new subuser instance
+        """
         password = validated_data.pop("password")
         instance = self.Meta.model(**validated_data)
         if password is not None:
             instance.set_password(password)
         instance.save()
         return instance
-
-
-class ItemsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Items
-        fields = ["id", "name", "barcode", "price", "owner"]
-
-    def create(self, validated_data):
-        instance = self.Meta.model(**validated_data)
-        instance.quantity = 0
-        instance.save()
-        return instance
-
-
-class PurchaseReceiptSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = purchaseReciept
-        fields = ["item", "quantity", "price", "owner", "recieptNumber"]
-
-    def create(self, validated_data):
-        purchase_receipt = purchaseReciept.objects.create(
-            recieptNumber=validated_data["recieptNumber"],
-            item=validated_data["item"],
-            quantity=validated_data["quantity"],
-            owner=validated_data["owner"],
-            price=validated_data["price"],
-        )
-        Items.objects.filter(id=validated_data["item"].id).update(
-            quantity=validated_data["item"].quantity + validated_data["quantity"]
-        )
-        return purchase_receipt
-
-
-class SellReceiptSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = sellReciept
-        fields = ["item", "quantity", "owner", "recieptNumber"]
-
-    def create(self, validated_data):
-        sell_receipt = sellReciept.objects.create(
-            recieptNumber=validated_data["recieptNumber"],
-            item=validated_data["item"],
-            quantity=validated_data["quantity"],
-            owner=validated_data["owner"],
-        )
-        Items.objects.filter(id=validated_data["item"].id).update(
-            quantity=validated_data["item"].quantity - validated_data["quantity"]
-        )
-        return sell_receipt
