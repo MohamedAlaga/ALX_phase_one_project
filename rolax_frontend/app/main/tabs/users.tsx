@@ -1,6 +1,7 @@
 "use client";
 import { manrope } from "@/app/layout";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 
 export default function usersTab() {
@@ -8,9 +9,33 @@ export default function usersTab() {
   var [isLoading, setIsLoading] = useState(true);
   var AllusersList: Array<any> = [];
   var [usersList, setUsersList] = useState<Array<any>>([]);
+  const router = useRouter();
+
+  const refrechToken = async () => {
+    try {
+      let response = await fetch("http://localhost:8000/api/users/refresh-token", {
+        method: "Post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      if (response.status !== 200) {
+        alert("your session has expiered please login again");
+        router.push("./login");
+        return "0";
+      }
+      return "1";
+    } catch (error) {
+      alert("your session has expiered please login again");
+      router.push("./login");
+      return "0";
+    }
+  };
+
   const getAllUsers = async () => {
     try {
-      let response = await fetch("http://localhost:8000/api/users", {
+      let response = await fetch("http://localhost:8000/api/users/", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -37,6 +62,7 @@ export default function usersTab() {
   }, []);
 
   const getUsersSearch = async () => {
+    refrechToken();
     AllusersList = await getAllUsers();
     const filteredUsers = AllusersList.filter((user: any) =>
       user["name"].toLowerCase().includes(searchname.current!.value.toLowerCase())

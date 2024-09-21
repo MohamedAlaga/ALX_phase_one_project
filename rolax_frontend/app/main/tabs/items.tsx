@@ -1,5 +1,6 @@
 "use client";
 import { manrope } from "@/app/layout";
+import { useRouter } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 
 export default function itemsTab() {
@@ -11,7 +12,7 @@ export default function itemsTab() {
 
   const getAllItems = async () => {
     try {
-      let response = await fetch("http://localhost:8000/api/items", {
+      let response = await fetch("http://localhost:8000/api/items/", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -29,7 +30,32 @@ export default function itemsTab() {
     }
   };
 
+  const router = useRouter();
+  
+  const refrechToken = async () => {
+    try {
+      let response = await fetch("http://localhost:8000/api/users/refresh-token", {
+        method: "Post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      if (response.status !== 200) {
+        alert("your session has expiered please login again");
+        router.push("./login");
+        return "0";
+      }
+      return "1";
+    } catch (error) {
+      alert("your session has expiered please login again");
+      router.push("./login");
+      return "0";
+    }
+  };
+
   const addItem = async () => {
+    refrechToken();
     try {
       let response = await fetch("http://localhost:8000/api/items/add", {
         method: "POST",
@@ -44,7 +70,7 @@ export default function itemsTab() {
         }),
       });
       if (response.status !== 200) {
-        console.error("Error adding item:", response.status);
+        alert("Error adding item");
         return;
       }
       barcodeRef.current!.value = "";
@@ -52,7 +78,7 @@ export default function itemsTab() {
       priceRef.current!.value = "";
       setItemsList(await getAllItems());
     } catch (error) {
-      console.error("Error adding item:", error);
+      alert("Error adding item");
       return;
     };
   };

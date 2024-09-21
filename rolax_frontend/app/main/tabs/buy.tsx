@@ -1,5 +1,6 @@
 "use client";
 import { manrope } from "@/app/layout";
+import { useRouter } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 
 export default function buyTab() {
@@ -27,11 +28,35 @@ export default function buyTab() {
       if (response.status === 404) {
         return "1";
       } else if (response.status !== 200) {
+        alert("Error fetching receipt number");
         return "0";
       }
       return Reciepts[0]["recieptNumber"] + 1;
     } catch (error) {
-      console.error("Error fetching receipt number:", error);
+      alert("Error fetching receipt number");
+      return "0";
+    }
+  };
+  const router = useRouter();
+  
+  const refrechToken = async () => {
+    try {
+      let response = await fetch("http://localhost:8000/api/users/refresh-token", {
+        method: "Post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      if (response.status !== 200) {
+        alert("your session has expiered please login again");
+        router.push("./login");
+        return "0";
+      }
+      return "1";
+    } catch (error) {
+      alert("your session has expiered please login again");
+      router.push("./login");
       return "0";
     }
   };
@@ -114,11 +139,13 @@ export default function buyTab() {
   };
 
   const handleAdd = async () => {
+    refrechToken();
     const newItem = await getItemByBarcode(barcode);
     if (newItem["item_name"]) { setItemsList([...itemsList, newItem]) }
   };
 
   const purchaseItems = async () => {
+    refrechToken();
     const response = await fetch("http://localhost:8000/api/purchase/add", {
       method: "POST",
       headers: {
@@ -127,13 +154,17 @@ export default function buyTab() {
       body: JSON.stringify(itemsList.map((item) => ({ id: item["item_id"], quantitiy: item["quantity"], price: item["price"] })),),
       credentials: "include",
     });
+
+    if (response.status !== 200) {
+      alert("Error purchasing items");
+      return;
+    }
     recieptsNumberRef.current = await getRecieptsNumber();
     dateRef.current = new Date().toISOString().split("T")[0];
     searchTerm = "";
     barcode = "";
     count = 0;
     setItemsList([]);
-
   };
   async function getReciepts(number: number) {
     try {
@@ -157,6 +188,7 @@ export default function buyTab() {
       }
       else if
         (response.status !== 200) {
+        alert("Error fetching receipt");
         return null;
       };
       searchTerm = "";
@@ -171,10 +203,12 @@ export default function buyTab() {
   };
 
   const handlePrevious = async () => {
+    refrechToken();
     const recNumber = Number(recieptsNumberRef.current) - 1;
     getReciepts(recNumber);
   }
   const handleNext = async () => {
+    refrechToken();
     const recNumber = Number(recieptsNumberRef.current) + 1;
     getReciepts(recNumber);
   }

@@ -1,17 +1,41 @@
 "use client";
 import { manrope } from "@/app/layout";
+import { useRouter } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 
 export default function SellTab() {
   const recieptsNumberRef = useRef<string | null>(null);
   const dateRef = useRef<string>();
-  var [barcode, setBarcode] = useState<string>(""); 
+  var [barcode, setBarcode] = useState<string>("");
   var [items, setItems] = useState<Array<{ item_name: string }> | null>(null);
   var [isLoading, setIsLoading] = useState(true);
   var [showDropdown, setShowDropdown] = useState(false);
   var [searchTerm, setSearchTerm] = useState("");
   var [count, setCount] = useState(0);
   var [itemsList, setItemsList] = useState<Array<any>>([]);
+  const router = useRouter();
+
+  const refrechToken = async () => {
+    try {
+      let response = await fetch("http://localhost:8000/api/users/refresh-token", {
+        method: "Post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      if (response.status !== 200) {
+        alert("your session has expiered please login again");
+        router.push("./login");
+        return "0";
+      }
+      return "1";
+    } catch (error) {
+      alert("your session has expiered please login again");
+      router.push("./login");
+      return "0";
+    }
+  };
 
   const getRecieptsNumber = async () => {
     try {
@@ -26,6 +50,7 @@ export default function SellTab() {
       if (response.status === 404) {
         return "1";
       } else if (response.status !== 200) {
+        alert("Error fetching receipt number");
         return "0";
       }
       return Reciepts[0]["recieptNumber"] + 1;
@@ -112,11 +137,13 @@ export default function SellTab() {
   };
 
   const handleAdd = async () => {
+    refrechToken();
     const newItem = await getItemByBarcode(barcode);
     if (newItem["item_name"]) { setItemsList([...itemsList, newItem]) }
   };
 
   const sellItems = async () => {
+    refrechToken();
     const response = await fetch("http://localhost:8000/api/sell/add", {
       method: "POST",
       headers: {
@@ -125,6 +152,10 @@ export default function SellTab() {
       body: JSON.stringify(itemsList.map((item) => ({ id: item["item_id"], quantitiy: item["quantity"] })),),
       credentials: "include",
     });
+    if (response.status !== 200) {
+      alert("Error selling items");
+      return;
+    }
     recieptsNumberRef.current = await getRecieptsNumber();
     dateRef.current = new Date().toISOString().split("T")[0];
     searchTerm = "";
@@ -156,6 +187,7 @@ export default function SellTab() {
       }
       else if
         (response.status !== 200) {
+        alert("Error fetching receipt number");
         return null;
       };
       searchTerm = "";
@@ -170,10 +202,12 @@ export default function SellTab() {
   };
 
   const handlePrevious = async () => {
+    refrechToken();
     const recNumber = Number(recieptsNumberRef.current) - 1;
     getReciepts(recNumber);
   }
   const handleNext = async () => {
+    refrechToken();
     const recNumber = Number(recieptsNumberRef.current) + 1;
     getReciepts(recNumber);
   }
@@ -279,7 +313,7 @@ export default function SellTab() {
                     {item["quantity"]}
                   </td>
                   <td className="py-4 border-r border-t border-slate-300"
-                  key={"row" + index + "col4"}>
+                    key={"row" + index + "col4"}>
                     {item["price"]}
                   </td>
                   <td className="py-4 border-t border-slate-300">{item["price"] * item["quantity"]}</td>

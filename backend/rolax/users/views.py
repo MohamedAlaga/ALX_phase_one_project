@@ -81,24 +81,27 @@ class RegisterSubUser(APIView):
             onsucces: user object
             onfailure: error message & status code 403 or 404
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
-        manager = currentUser.manager.id
-        if not currentUser.has_perm("users.manage_users"):
-            return Response(
-                {"message": "You do not have permission to create sub users"},
-                status=status.HTTP_403_FORBIDDEN,
+        try:
+            currentUser = checkUser(request.COOKIES.get("token"))
+            manager = currentUser.manager.id
+            if not currentUser.has_perm("users.manage_users"):
+               return Response(
+                    {"message": "You do not have permission to create sub users"},
+                    status=status.HTTP_403_FORBIDDEN,
             )
-        if not manager:
-            return Response(
-                {"message": "No manager found"}, status=status.HTTP_403_FORBIDDEN
-            )
-        if currentUser:
-            data = request.data.copy()
-            data["manager"] = manager
-            serizlizer = SubUserSerializer(data=data)
-            serizlizer.is_valid(raise_exception=True)
-            serizlizer.save()
-            return Response(serizlizer.data)
+            if not manager:
+                return Response(
+                    {"message": "No manager found"}, status=status.HTTP_403_FORBIDDEN
+                )
+            if currentUser:
+                data = request.data.copy()
+                data["manager"] = manager
+                serizlizer = SubUserSerializer(data=data)
+                serizlizer.is_valid(raise_exception=True)
+                serizlizer.save()
+                return Response(serizlizer.data)
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -118,27 +121,30 @@ class GrantPermission(APIView):
             on success: permission granted successfully
             on failure: error message & status code 400 or 404
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
-        if not currentUser.has_perm("users.manage_users"):
-            return Response(
-                {"message": "You do not have permission to grant permissions"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        user_id = request.data["user_id"]
-        if not user_id:
-            return Response(
-                {"message": "No user id found"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        user = User.objects.filter(id=user_id).first()
-        if user:
-            permission = request.data["permission"]
-            if not permission:
-                return Response(
-                    {"message": "No permission found"},
-                    status=status.HTTP_400_BAD_REQUEST,
+        try:
+            currentUser = checkUser(request.COOKIES.get("token"))
+            if not currentUser.has_perm("users.manage_users"):
+             return Response(
+                    {"message": "You do not have permission to grant permissions"},
+                    status=status.HTTP_403_FORBIDDEN,
                 )
-            user.user_permissions.add(Permission.objects.get(codename=permission))
-            return Response({"message": "Permission granted successfully"})
+            user_id = request.data["user_id"]
+            if not user_id:
+                return Response(
+                    {"message": "No user id found"}, status=status.HTTP_400_BAD_REQUEST
+                )
+            user = User.objects.filter(id=user_id).first()
+            if user:
+                permission = request.data["permission"]
+                if not permission:
+                    return Response(
+                       {"message": "No permission found"},
+                       status=status.HTTP_400_BAD_REQUEST,
+                    )
+                user.user_permissions.add(Permission.objects.get(codename=permission))
+                return Response({"message": "Permission granted successfully"})
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -159,7 +165,10 @@ class RevokePermission(APIView):
             on success: permission revoked successfully
             on failure: error message & status code 400 or 404
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
+        try:
+            currentUser = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not currentUser.has_perm("users.manage_users"):
             return Response(
                 {"message": "You do not have permission to revoke permissions"},
@@ -195,7 +204,10 @@ class manageUser(APIView):
             on success: user object
             on failure: error message & status code 404 or 403
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
+        try:        
+            currentUser = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not currentUser.has_perm("users.manage_users"):
             return Response(
                 {"message": "You do not have permission to manage users"},
@@ -218,7 +230,10 @@ class manageUser(APIView):
             on success: user deleted successfully
             on failure: error message & status code 404 or 403
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
+        try:
+            currentUser = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not currentUser.has_perm("users.manage_users"):
             return Response(
                 {"message": "You do not have permission to delete users"},
@@ -258,7 +273,10 @@ class getCurrentUserPerms(APIView):
             on success: dictonary contains user permissions
             on failure: error message & status code 404
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
+        try:
+            currentUser = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if currentUser:
             perms = currentUser.get_all_permissions()
             return Response({"permissions": perms})
@@ -281,7 +299,10 @@ class getuserPerms(APIView):
             on success: dictonary contains user permissions
             on failure: error message & status code 404
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
+        try:
+            currentUser = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not currentUser.has_perm("users.manage_users"):
             return Response(
                 {"message": "You do not have permission to view user permissions"},
@@ -308,7 +329,10 @@ class getAllUsers(APIView):
             on success: list of all users
             on failure: error message & status code 403
         """
-        currentUser = checkUser(request.COOKIES.get("token"))
+        try:
+            currentUser = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not currentUser.has_perm("users.manage_users"):
             return Response(
                 {"message": "You do not have permission to view users"},
@@ -416,4 +440,28 @@ class Logout(APIView):
         response = Response()
         response.delete_cookie("token")
         response.data = {"message": "success"}
+        return response
+
+class RefreshTokenView(APIView):
+    """
+    Endpoint to refresh the user's access token.
+    """
+
+    def post(self, request):
+        token = request.COOKIES.get("token")
+        if not token:
+            return Response({"message": "Unauthenticated!"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            payload = jwt.decode(token, "secret", algorithms=["HS256"], options={"verify_exp": False})
+        except jwt.ExpiredSignatureError:
+            return Response({"message": "Expired token. Login again."}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.InvalidTokenError:
+            return Response({"message": "Invalid token!"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        payload["exp"] = datetime.datetime.utcnow() + datetime.timedelta(minutes=60)
+        new_token = jwt.encode(payload, "secret", algorithm="HS256")
+        response = Response()
+        response.set_cookie(key="token", value=new_token, httponly=True)
+        response.data = {"token": new_token}
         return response

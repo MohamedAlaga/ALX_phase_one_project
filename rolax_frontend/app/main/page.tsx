@@ -8,13 +8,37 @@ import SellTab from "./tabs/sell";
 import BuyTab from "./tabs/buy";
 import ItemsTab from "./tabs/items";
 import UsersTab from "./tabs/users";
+import { useRouter } from "next/navigation";
 
 
 export default function Home() {
+  const router = useRouter();
+  const refrechToken = async () => {
+    try {
+      let response = await fetch("http://localhost:8000/api/users/refresh-token", {
+        method: "Post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      if (response.status !== 200) {
+        alert("your session has expiered please login again");
+        router.push("./login");
+        return "0";
+      }
+      return "1";
+    } catch (error) {
+      alert("your session has expiered please login again");
+      router.push("./login");
+      return "0";
+    }
+  };
   var selectedButton = "bg-violet-600 rounded-md w-full py-3 flex text-lg items-center justify-center text-white";
   var unselectedButton = "rounded-md w-full py-3 flex text-lg items-center justify-center";
   var [selectedTab, setSelectedTab] = useState(0);
   const selectedtabhandler = (tab: number) => {
+    refrechToken();
     setSelectedTab(selectedTab = tab);
   };
   return (
@@ -31,7 +55,7 @@ export default function Home() {
           <button onClick={(event) => selectedtabhandler(3)} className={selectedTab == 3 ? selectedButton : unselectedButton}>{selectedTab == 3 ? usersIconWhite() : usersIconBlack()}users</button>
         </div>
         <div className="w-full ">
-        {selectedTab == 0 ? <SellTab /> : selectedTab == 1 ? <BuyTab /> : selectedTab == 2 ? <ItemsTab /> : <UsersTab />}
+          {selectedTab == 0 ? <SellTab /> : selectedTab == 1 ? <BuyTab /> : selectedTab == 2 ? <ItemsTab /> : <UsersTab />}
         </div>
       </div>
     </main>

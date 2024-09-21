@@ -27,7 +27,10 @@ class purchaseReceiptBulkCreateView(APIView):
             on success: message: "Purchase receipts created successfully"
             on failure: error message and status code 400 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_purchase_receipts"):
             return Response(
                 {"message": "You do not have permission to purchase receipt"},
@@ -89,7 +92,10 @@ class getCurentUserlastPurchaseReciept(APIView):
             on success: list of items in the last purchase receipt
             on failure: error message and status code 404 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_purchase_receipts"):
             return Response(
                 {"message": "You do not have permission to purchase receipts"},
@@ -140,7 +146,10 @@ class getUserPurchaserecieptsByNumber(APIView):
             on success: list of items in the purchase receipt
             on failure: error message and status code 404 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_purchase_receipts"):
             return Response(
                 {"message": "You do not have permission to purchase receipt"},

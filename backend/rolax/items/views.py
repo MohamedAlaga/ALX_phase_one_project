@@ -27,7 +27,10 @@ class addItemsView(APIView):
             on success: message: "Item added successfully"
             on failure: error message and status code 400 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_items"):
             return Response(
                 {"message": "You do not have permission to add items"},
@@ -56,7 +59,10 @@ class getCurrentUserItems(APIView):
             on success: list of items
             on failure: error message and status code 400 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_items"):
             return Response(
                 {"message": "You do not have permission to  items"},
@@ -100,7 +106,10 @@ class getCurrentUserItemsById(APIView):
             on success: list of items
             on failure: error message and status code 404 or 403
         """
-        owner = checkUser(request.COOKIES.get("token")).id
+        try:
+            owner = checkUser(request.COOKIES.get("token")).id
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -134,7 +143,10 @@ class getCurrentUserItemsBybarcode(APIView):
             on success: item details
             on failure: error message and status code 404 or 403
         """
-        owner = checkUser(request.COOKIES.get("token")).id
+        try:
+            owner = checkUser(request.COOKIES.get("token")).id
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN
@@ -169,7 +181,10 @@ class getSearchItems(APIView):
             on success: list of items
             on failure: error message and status code 404 or 403
         """
-        owner = checkUser(request.COOKIES.get("token")).id
+        try:
+            owner = checkUser(request.COOKIES.get("token")).id
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if owner is None:
             return Response(
                 {"message": "No user found"}, status=status.HTTP_403_FORBIDDEN

@@ -13,4 +13,5 @@ urlpatterns = [
     path("signup", Register.as_view()),
     path("login", Login.as_view()),
     path("logout", Logout.as_view()),
+    path("refresh-token", RefreshTokenView.as_view()),
 ]

@@ -28,7 +28,10 @@ class sellReceiptBulkCreateView(APIView):
             on success: message: "Sell receipts created successfully"
             on failure: error message and status code 400 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_sell_receipts"):
             return Response(
                 {"message": "You do not have permission to sell receipt"},
@@ -85,7 +88,10 @@ class getCurrentUserLastsellReceipt(APIView):
             on success: list of items in the last sell receipt
             on failure: error message and status code 404 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_sell_receipts"):
             return Response(
                 {"message": "You do not have permission to sell receipt"},
@@ -136,7 +142,10 @@ class getCurrentUserSellRecieptsByNumber(APIView):
             on success: list of items in the sell receipt
             on failure: error message and status code 404 or 403
         """
-        user = checkUser(request.COOKIES.get("token"))
+        try:
+            user = checkUser(request.COOKIES.get("token"))
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.has_perm("users.manage_sell_receipts"):
             return Response(
                 {"message": "You do not have permission to sell receipt"},

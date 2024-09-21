@@ -24,7 +24,7 @@ export default function Home() {
       setShowDialog(true);
       return;
     }
-    const response = await fetch("http://localhost:8000/api/signup", {
+    const response = await fetch("http://localhost:8000/api/users/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
