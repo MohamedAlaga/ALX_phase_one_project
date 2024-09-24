@@ -1,119 +1,82 @@
+# Rolax - Pharmacy Management System
 
-![Uploading Screenshot 2024-09-18 210143.png…]()
+![Rolax Logo](./screenshot.png)
 
-
-![Screenshot 2024-09-18 210220](https://github.com/user-attachments/assets/046c946d-69b2-4508-9fdf-107a4236d7f4)
-
-
-# ROLAX
+## Table of Contents
+- [Introduction](#introduction)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Authors](#authors)
 
 ## Introduction
+**Rolax** is a web application designed to streamline the management processes of pharmacies. By leveraging modern web technologies, Rolax provides pharmacy staff with an intuitive interface for handling inventory, sales, and customer management. This project was developed as part of the **ALX Software Engineering track phase one portfolio project**.
 
-ROLAX is a cutting-edge Pharmacy Management System designed to streamline pharmacy operations by automating sales, inventory, and purchasing processes. Tailored for pharmacy staff, ROLAX enhances efficiency by reducing manual paperwork. Our solution avoids e-commerce functionality, focusing solely on optimizing internal pharmacy operations.
+### Team Members
+- **Mohamed Alaga** - Frontend and Backend Development
+- **John Mokaya** - Frontend and Backend Development
 
- Authors
-- [Mohammed Alaga (CEO, Backend Developer)]() <!-- Replace with actual LinkedIn profile -->
-- [John Mokaya (COO, Frontend Developer)](https://www.linkedin.com/in/john-mokaya-3b926a261) 
+### Timeline
+The project was completed over a period of **one month** as we learned about the frameworks while implementing the application.
+
+### Target Audience
+This application is specifically designed for pharmacies seeking to enhance their operational efficiency.
+
+## Features
+- **User Authentication:** Secure login for pharmacy staff.
+- **Inventory Management:** Add, update, and delete products easily.
+- **Sales Tracking:** Monitor sales in real-time with detailed reports.
+- **Responsive Design:** Accessible on both desktop and mobile devices.
+
+## Technologies Used
+- **Frontend:** 
+  - [Next.js](https://nextjs.org/)
+  - [TypeScript](https://www.typescriptlang.org/)
+  - [Tailwind CSS](https://tailwindcss.com/)
+  
+- **Backend:**
+  - [Django Rest Framework](https://www.django-rest-framework.org/)
+
+## Prerequisites
+Before you begin, ensure you have the following installed:
+- **Node.js** (version >= 14.x)
+- **npm** (Node package manager)
+- **Python** (version >= 3.6)
+- **pip** (Python package manager)
+- **Django** (installed via pip)
 
 ## Installation
+To get started with Rolax, follow these steps:
 
-To set up ROLAX locally, follow these steps:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/MohamedAlaga/ALX_phase_one_project.git
 
-1.** Clone the Repository**
+# usage :
 
+1. run the backend server 
+   ```bash
+   cd ./backend
+   ./venv/Scripts/activate
+   cd ./rolax
+   python manage.py runserver
+
+2. in a separate terminal, start the frontend development server:
     ```bash
-    git clone https://github.com/MohamedAlaga/ALX_phase_one_project.git
-    ```
+    npm run dev
 
-2. **Navigate to the Project Directory**
+3.  your browser and visit http://localhost:3000 to access the application.
 
-    ```bash
-    cd ALX_phase_one_project
-    ```
+# Contributing
+Contributions are welcome! Please submit a pull request or create an issue for any feature requests or bugs.
 
-3. **Install Dependencies**
+## License
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
-    Ensure you have Node.js and Python installed. Then, run:
+# Authors
 
-    ```bash
-    npm install
-    ```
-
-    For Python dependencies, use:
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4. **Set Up Environment Variables**
-
-    Create a `.env` file in the root directory and add the necessary environment variables as described in `.env.example`.
-
-5. **Run Migrations**
-
-    ```bash
-    python manage.py migrate
-    ```
-
-6. **Start the Application**
-
-    ```bash
-    npm start
-    ```
-
-    For the backend, run:
-
-    ```bash
-    python manage.py runserver
-    ```
-
-## Usage
-
-Once the application is running, you can access the ROLAX interface by navigating to `http://localhost:3000` in your web browser. 
-
-- **Dashboard:** Manage sales, view inventory, and handle purchasing.
-- **Reports:** Generate and view operational reports.
-- **Settings:** Configure system parameters and manage users.
-
-## Contributing
-
-We welcome contributions to ROLAX! To contribute, please follow these steps:
-
-1. **Fork the Repository**
-2. **Create a New Branch**
-
-    ```bash
-    git checkout -b feature/YourFeatureName
-    ```
-
-3. **Make Your Changes**
-4. **Commit Your Changes**
-
-    ```bash
-    git commit -m "Add feature or fix issue"
-    ```
-
-5. **Push to Your Branch**
-
-    ```bash
-    git push origin feature/YourFeatureName
-    ```
-
-6. **Create a Pull Request**
-
-    Open a pull request on GitHub and describe the changes you’ve made.
-
-For more detailed contribution guidelines, see [CONTRIBUTING.md]
-
-## Related Projects
-
-Here are some related projects that might interest you:
-
-- **Pharmacy Management Software (PMS):** Manages inventory, sales, and vendor interactions. Tailored for larger chains with e-commerce features.
-- **Meditech:** Integrated with electronic health records (EHR), focusing on tracking sales and managing stock.
-- **Winpharm:** Desktop-based solution with limited cloud capabilities for inventory control and sales management.
-
-## Licensing
-
-ROLAX is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
-
+- [Mohamed Alaga](https://github.com/MohamedAlaga)
+- [john Mokaya](https://github.com/mokayaj857)
